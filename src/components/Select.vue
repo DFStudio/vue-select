@@ -738,6 +738,24 @@
         type: Boolean,
         default: true
       },
+
+      /**
+       * function to filter options by when searching
+       */
+      filter: {
+        type: Function,
+        default(option, search) {
+          if (typeof option === 'object') {
+            if (option.hasOwnProperty(this.label)) {
+              return option[this.label].toLowerCase().indexOf(search.toLowerCase()) > -1
+            } else {
+              return console.warn(`[vue-select warn]: Label key "option.${this.label}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
+            }
+          } else {
+            return option.toLowerCase().indexOf(search.toLowerCase()) > -1
+          }
+        }
+      }
     },
 
     data() {
@@ -1085,12 +1103,7 @@
        */
       filteredOptions() {
         let options = this.mutableOptions.filter((option) => {
-          if (typeof option === 'object' && option.hasOwnProperty(this.label)) {
-            return option[this.label].toLowerCase().indexOf(this.search.toLowerCase()) > -1
-          } else if (typeof option === 'object' && !option.hasOwnProperty(this.label)) {
-            return console.warn(`[vue-select warn]: Label key "option.${this.label}" does not exist in options object.\nhttp://sagalbot.github.io/vue-select/#ex-labels`)
-          }
-          return option.toLowerCase().indexOf(this.search.toLowerCase()) > -1
+          return this.filter(option,this.search)
         })
         if (this.taggable && this.search.length && !this.optionExists(this.search)) {
           options.unshift(this.search)
